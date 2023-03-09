@@ -1,62 +1,102 @@
-const gridContainer = document.querySelector(".grid-container");
-let msg = document.createElement("div");
-msg.classList.add("msg");
-msg.textContent = "Click on the 'Create a sketch!' button!";
-gridContainer.appendChild(msg);
-
+//LIST OF GLOBAL VARIABLES AND TWO FUNCTIONS THAT REMOVE GRIDS
 let a = 0;
 let result = 0;
-let hasClickedButtonOne = false;
+const container = document.querySelector(".container");
+let gridItem;
 
-function createGridItems() {
-    msg.remove(msg);
-    const gridItem = document.createElement("div");
-    gridItem.classList.add("grid-item");
-    gridContainer.appendChild(gridItem);
+//OBLITERATE ANYTHING
+function obliterate(x) {
+    x.remove();
+}
 
-    gridItem.addEventListener("mouseover", (event) => {
-        event.target.style.backgroundColor = "purple";
-    });
+//USE OBLITERATE TO REMOVE THE GRID ITEMS
+function removeGrid() {
+    let x = document.querySelectorAll("div.grid-item");
+    x.forEach(obliterate);
+}
 
-    const btnTwo = document.querySelector(".btn-two");
-    btnTwo.addEventListener("click", () => {
-        gridItem.remove(gridItem);
-        hasClickedButtonOne = false;
-    });
-};
+//WE CREATE A STARTING 16X16 GRID THAT SERVES AS A SKETCHPAD
+function createStartingGrid() {
+    for(let i = 0; i < 256; i++) {
+        gridItem = document.createElement("div");
+        gridItem.classList.add("grid-item");
+        container.appendChild(gridItem);
+    }
+    container.setAttribute("style", "border: 3px solid black; display: grid; grid-template-columns: repeat(16, 1fr); grid-template-rows: repeat(16, 1fr); width: 600px; height: 400px;");
+}
 
-const btnOne = document.querySelector(".btn-one");
-btnOne.addEventListener("click", () => {
-    if(hasClickedButtonOne) {
-        alert("Hey, you must first press the Reset button to reset your sketch!");
+createStartingGrid();
+
+//THIS FUNCTION REMOVES THE STARTING GRID AND CREATES A X * X GRID BASED ON USER INPUT
+function createGrid() {
+    a = prompt("Insert a number between 16 and 100 (inclusive) to create a grid:");
+    if(a < 16 || a > 100) {
+        alert("Number out of score. Try again with a number between 16 and 100 (inclusive)");
     } else {
-    a = prompt("Insert a number between 16 and 100 (inclusive)");
-    if(!isNaN(a)) {
-        if(a > 100 || a < 16) {
-            alert("Invalid number. Try again from 16 to 100 (inclusive)");
-        } else {
-            result = a * a;
-            for(let i = 0; i < result; i++) {
-            createGridItems();
-            };
-            gridContainer.setAttribute("style", `max-width: 800px; max-height: 600px; grid-template-columns: repeat(${a}, auto);`);
-            hasClickedButtonOne = true;
-        }
-    } else {
-        alert("Not a number...try again!");
+    result = a * a;
+    for(let i = 0; i < result; i++) {
+        gridItem = document.createElement("div");
+        gridItem.classList.add("grid-item");
+        container.appendChild(gridItem);
+    }
+    container.setAttribute("style", `border: 3px solid black; display: grid; grid-template-columns: repeat(${a}, 1fr); grid-template-rows: repeat(${a}, 1fr); width: 600px; height: 400px;`);
     }
 }
+
+//BUTTON THAT REMOVES A GRID AND CREATES A NEW ONE BASED ON USER INPUT
+const btnOne = document.querySelector(".btn-one");
+btnOne.addEventListener("click", () => {
+    removeGrid();
+    createGrid();
 });
 
+let mouseIsDown = false;
+container.addEventListener("mousedown", function(){mouseIsDown = true});
+container.addEventListener("mouseup", function(){mouseIsDown = false});
+container.addEventListener("mousemove", function (e) {
+    const target = e.target;
 
-/*
-
-Add a button to the top of the screen that will send the user a popup asking for the number of squares per side for the new grid. Once entered, 
-the existing grid should be removed and a new grid should be generated in the same total space as before (e.g. 960px wide) so that you’ve got a
- new sketch pad. Tip: Set the limit for the user input to a maximum of 100. A larger number of squares results in more computer resources being used, 
- potentially causing delays, freezing, or crashing that we want to prevent.
-Research button tags in HTML and how you can make a JavaScript function run when one is clicked.
-Also check out prompts.
-You should be able to enter 64 and have a brand new 64x64 grid pop up without changing the total amount of pixels used.
-
-*/
+    if(target.matches(".grid-item")) {
+        if(mouseIsDown) {
+        target.setAttribute("style", "background-color: black;");
+    }
+    }
+});
+//=======================================================================
+//FUNCTION TO GENERATE A RANDOM INT (COPY PASTED FROM MDNdocs EXAMPLE)
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min); // The maximum is exclusive and the minimum is inclusive
+  }
+//BUTTON RANDOM COLOR
+const btnTwo = document.querySelector(".btn-two");
+btnTwo.addEventListener("click", function() {
+    container.addEventListener("mousemove", function (e) {
+        const target = e.target;
+    
+        let x = getRandomInt(0, 256);
+        let y = getRandomInt(0, 256);
+        let z = getRandomInt(0, 256);
+        let randomColor = `rgb(${x}, ${y}, ${z})`;
+    
+        if(target.matches(".grid-item")) {
+            if(mouseIsDown) {
+            target.setAttribute("style", `background-color: ${randomColor};`);
+        }
+        }
+    });
+});
+//BUTTON BLACK
+const btnThree = document.querySelector(".btn-three");
+btnThree.addEventListener("click", function() {
+    container.addEventListener("mousemove", function (e) {
+        const target = e.target;
+    
+        if(target.matches(".grid-item")) {
+            if(mouseIsDown) {
+            target.setAttribute("style", `background-color: black`);
+        }
+        }
+    });
+});
